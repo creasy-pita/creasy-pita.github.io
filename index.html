@@ -93,7 +93,7 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <h1 id="spring-aop-源码分析"><a href="#spring-aop-源码分析" class="headerlink" title="spring aop 源码分析"></a>spring aop 源码分析</h1><h2 id="spring-aop-源码入口"><a href="#spring-aop-源码入口" class="headerlink" title="spring aop 源码入口"></a>spring aop 源码入口</h2><p>1 通过spring提供BeanPostProcessor的扩展点来完成aop增强<br>AbstractAutowireCapableBeanFactory:applyBeanPostProcessorsAfterInitialization <code>for (BeanPostProcessor processor : getBeanPostProcessors())</code></p>
+        <h2 id="spring-aop-源码分析"><a href="#spring-aop-源码分析" class="headerlink" title="spring aop 源码分析"></a>spring aop 源码分析</h2><h2 id="spring-aop-源码入口"><a href="#spring-aop-源码入口" class="headerlink" title="spring aop 源码入口"></a>spring aop 源码入口</h2><p>1 通过spring提供BeanPostProcessor的扩展点来完成aop增强<br>AbstractAutowireCapableBeanFactory:applyBeanPostProcessorsAfterInitialization <code>for (BeanPostProcessor processor : getBeanPostProcessors())</code></p>
 <p>如果有aop切面，List<BeanPostProcessor>中会产生AbstractAutoProxyCreator类，调用AbstractAutoProxyCreator：postProcessAfterInitialization会进入spring aop增强处理的逻辑</p>
 <p>:question:spring是否每次默认加载AbstractAutoProxyCreator(不重要)</p>
 <h2 id="spring-aop-筛选合适的通知器并创建代理对象"><a href="#spring-aop-筛选合适的通知器并创建代理对象" class="headerlink" title="spring aop 筛选合适的通知器并创建代理对象"></a>spring aop 筛选合适的通知器并创建代理对象</h2><h3 id="1-AbstractAutoProxyCreator-postProcessAfterInitialization"><a href="#1-AbstractAutoProxyCreator-postProcessAfterInitialization" class="headerlink" title="1 AbstractAutoProxyCreator:postProcessAfterInitialization"></a>1 AbstractAutoProxyCreator:postProcessAfterInitialization</h3><h3 id="2-AbstractAutoProxyCreator-wrapIfNecessary-如果必要的话给目标类包装上aop增强"><a href="#2-AbstractAutoProxyCreator-wrapIfNecessary-如果必要的话给目标类包装上aop增强" class="headerlink" title="2 AbstractAutoProxyCreator:wrapIfNecessary 如果必要的话给目标类包装上aop增强"></a>2 AbstractAutoProxyCreator:wrapIfNecessary 如果必要的话给目标类包装上aop增强</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">Object[] specificInterceptors = getAdvicesAndAdvisorsForBean(bean.getClass(), beanName, <span class="keyword">null</span>);<span class="comment">//&lt;1&gt;</span></span><br><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment">    * 若 specificInterceptors != null，即 specificInterceptors != DO_NOT_PROXY，</span></span><br><span class="line"><span class="comment">    * 则为 bean 生成代理对象，否则直接返回 bean</span></span><br><span class="line"><span class="comment">    */</span></span><br><span class="line"><span class="keyword">if</span> (specificInterceptors != DO_NOT_PROXY) &#123;</span><br><span class="line">    <span class="keyword">this</span>.advisedBeans.put(cacheKey, Boolean.TRUE);</span><br><span class="line">    <span class="comment">//&lt;2&gt; 创建包含拦截器连的动态代理  </span></span><br><span class="line">    Object proxy = createProxy(</span><br><span class="line">            bean.getClass(), beanName, specificInterceptors, <span class="keyword">new</span> SingletonTargetSource(bean));</span><br><span class="line">    <span class="keyword">this</span>.proxyTypes.put(cacheKey, proxy.getClass());</span><br><span class="line">    <span class="comment">/*</span></span><br><span class="line"><span class="comment">        * 返回代理对象，此时 IOC 容器输入 bean，得到 proxy。此时，</span></span><br><span class="line"><span class="comment">        * beanName 对应的 bean 是代理对象，而非原始的 bean</span></span><br><span class="line"><span class="comment">        */</span></span><br><span class="line">    <span class="keyword">return</span> proxy;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">this</span>.advisedBeans.put(cacheKey, Boolean.FALSE);</span><br><span class="line"><span class="comment">// specificInterceptors = null，直接返回 bean,不会加入aop逻辑</span></span><br><span class="line"><span class="keyword">return</span> bean;</span><br></pre></td></tr></table></figure>
@@ -221,7 +221,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2021/05/13/Spring-AOP-SourceCode-guide/" data-id="ckom8fn6z0002kov7hbhj2cfw" data-title="Spring-AOP-SourceCode-guide" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2021/05/13/Spring-AOP-SourceCode-guide/" data-id="ckom8odnt0002nkv73frf2m0e" data-title="Spring-AOP-SourceCode-guide" class="article-share-link">Share</a>
       
       
       
@@ -412,7 +412,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2021/05/13/Spring-AOP%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" data-id="ckom8fn760005kov70ixhhadd" data-title="" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2021/05/13/Spring-AOP%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" data-id="ckom8odnz0005nkv72y52cyjb" data-title="" class="article-share-link">Share</a>
       
       
       
@@ -450,7 +450,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2021/05/13/test-my-site/" data-id="ckom8fn6z0001kov70v17hjj1" data-title="test_my_site" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2021/05/13/test-my-site/" data-id="ckom8odnq0001nkv70k55a37e" data-title="test_my_site" class="article-share-link">Share</a>
       
       
       
@@ -501,7 +501,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2021/05/13/hello-world/" data-id="ckom8fn6r0000kov72exr5gec" data-title="Hello World" class="article-share-link">Share</a>
+      <a data-url="http://example.com/2021/05/13/hello-world/" data-id="ckom8odnm0000nkv7f4t6b5o2" data-title="Hello World" class="article-share-link">Share</a>
       
       
       
