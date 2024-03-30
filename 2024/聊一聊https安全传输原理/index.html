@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>聊一聊https安全传输原理.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+<link rel="stylesheet" href="file:///d%3A/Program%20Files/Microsoft%20VS%20Code/resources/markdown.css" type="text/css">
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h2 id="1-%E5%BA%8F%E8%A8%80">1 序言</h2>
+<p>今天来聊一聊https安全传输原理。</p>
+<p>我们先虚构两个人物，一个国内的Zhang,一个米国的Alice。<br>
+这俩隔着千山万水，通过网络联系上了， 两个人臭味相投，聊得火热，天南地北，还夹杂着不少隐私的话题。</p>
+<h2 id="2-%E6%9C%89%E4%B8%80%E7%A7%8D%E8%A2%AB%E5%81%B7%E7%AA%A5%E7%9A%84%E6%84%9F%E8%A7%89">2 有一种被偷窥的感觉</h2>
+<p>因为聊了隐私，Zhang突然意识到，通信是明文的，恶意的人可以监听我们通信，打开我们发送的数据包，偷窥我们的隐私。</p>
+<p>于是Alice提议：要不使用加密算法，每次传输前用算法加密，对方接收的时候用算法解密，像这样：</p>
+<p><img src="./imgs/对称加密通信.png" alt=""></p>
+<p>这加密和解密算法是公开的，那个密钥是保密的， 只有两人才知道， 这样生成的加密消息（密文） 别人就无法得知了。但是密钥要发给另一个人，因为网络是不安全的，还不能通过网络， 这密钥怎么安全地发过来啊 ？</p>
+<p>Zhang沉默了，心想：难不成要专程去趟米国传递密钥，那跟其他朋友联系也得这么来一遭？！</p>
+<p>注：这叫<strong>对称加密算法</strong>， 因为加密和解密用的是同一个密钥。虽然对数据要来一道加密的工序，但加解密速度还可以。</p>
+<h2 id="3-rsa--%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86">3 RSA : 非对称加密</h2>
+<p>直到后来，他们知道了RSA的非对称加密算法这个东西。RSA有意思了，它不像之前的算法，相互商量一个密钥，而是有一对密钥，一个是保密的，叫做<strong>私钥</strong>，一个是公开的，叫做<strong>公钥</strong>。而且更有意思的是，<strong>用私钥加密的数据，只有对应的公钥才能解密，用公钥加密的数据， 只有对应的私钥才能解密。</strong></p>
+<p><img src="./imgs/非对称加密通信.png" alt=""></p>
+<p>有了它，Zhang给Alice发消息的时候，就可以用Alice给的公钥（反正是公开的）去加密， 等到消息被 Alice 收到后， 她就可以用自己的私钥去解密（只有Alice才能解开，私钥是保密的 ）。反过来也是如此。</p>
+<p>这样没有任何人能窥探他们了</p>
+<h2 id="4-%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86%E5%AF%B9%E7%A7%B0%E5%8A%A0%E5%AF%86">4 非对称加密+对称加密</h2>
+<p>试了几次后，发现这东西有点慢。</p>
+<p>Zhang细想了下，觉得可以用非对称加密+对称加密方法来解决，就给Alice提议：可以先用非对称加密的方式通信，把你的公钥发给我，有了这个公钥，后续我们就用对称加密的方式通信。</p>
+<h2 id="5-%E4%B8%AD%E9%97%B4%E4%BA%BA%E6%94%BB%E5%87%BB">5 中间人攻击</h2>
+<p>热心朋友向Zhang提出了疑问，说：你怎么知道公钥就是Alice发过来的公钥，假如有个中间人截获了Alice发的公钥，然后自己冒充Alice伪造出一个公钥发给你，你就会用这个公钥加密发送数据，中间人就可以解密看到你的消息了。</p>
+<p><strong>中间人攻击的图</strong></p>
+<p>听到这，Zhang背后冒汗，心想：还以为我们在安全传输呢...。</p>
+<p>看来问题出现在了公钥的分发上！  虽然这个东西是公开的， 但是在别有用心的人看来，截取以后还可以干坏事！</p>
+<h2 id="6-%E4%BD%A0%E5%88%B0%E5%BA%95%E6%98%AF%E8%B0%81">6 你到底是谁？</h2>
+<p>怎么分发密钥呢？似乎又回到了最初的问题：怎么安全的保护密钥？<br>
+但跟最初又不相同，这一次的公钥不用保密，但是一定得有个办法声明这个公钥确实是Alice的， 而不是别人的。</p>
+<p>现实中有公证处，它提供的公证材料大家都信任，那在网络世界也可以建立一个这样的具备公信力的认证中心， 这个中心给大家颁发一个证书， 用于证明一个人的身份。</p>
+<p>这个证书里除了包含一个人的基本信息之外，还有包括最关键的一环：这个人的公钥(用于数据通信加密)！这样以来我拿到证书就可以安全地取到公钥了 ！</p>
+<p>证书怎么安全传输？ 要是证书传递的过程中被篡改了怎么办？</p>
+<p>不过后来Zhang还是找到了突破口<strong>数字签名</strong>。</p>
+<p>简单来讲是这样， Alice可以把她的公钥和个人信息用一个Hash算法生成一个消息摘要， 这个Hash算法有个极好的特性，只要输入数据有一点点变化，那生成的消息摘要就会有巨变，这样就可以防止别人修改原始内容。</p>
+<p><img src="./imgs/消息摘要过程.png" alt=""></p>
+<p>可是作为攻击者的中间人笑了： “虽然我没办法改公钥，但是我可以把整个原始信息都替换了， 生成一个新的消息摘要， 你不还是辨别不出来？”</p>
+<p>Zhang说你别得意的太早 ， 我们会让有公信力的认证中心（简称CA）用它的私钥对消息摘要加密，形成签名：</p>
+<p><img src="./imgs/数字签名过程.png" alt=""></p>
+<p>这还不算， 还把原始信息和数据签名合并， 形成一个全新的东西，叫做“<strong>数字证书</strong>”</p>
+<p><img src="./imgs/数字证书过程.png" alt=""></p>
+<p>Zhang接着说：当Alice把她的证书发给我的时候， 我就用同样的Hash 算法， 再次生成消息摘要，然后用CA的公钥对数字签名解密， 得到CA创建的消息摘要， 两者一比，就知道有没有人篡改了！</p>
+<p>如果没人篡改， 我就可以安全的拿到Alice的公钥，有了公钥， 后序的加密工作就可以开始了。</p>
+<p>虽然很费劲， 但是为了防范你们，实在是没办法啊。</p>
+<p><img src="./imgs/验证数字证书过程.png" alt=""></p>
+<p>中间人说： “算你狠！ 等着吧，我还有别的招。 对了，我问你， 你这个CA的公钥怎么拿到？难道不怕我在你传输ＣＡ公钥的时候发起中间人攻击吗？　如果我成功的伪装成了ＣＡ，你这一套体系彻底玩完。”</p>
+<p>Zhang语塞了，折腾了半天，又回到了公钥安全传输的问题！</p>
+<p>不过转念一想，想解决鸡生蛋，蛋生鸡的问题必须得打破这个怪圈才行，我必须得信任ＣＡ，并且通过安全的的方式获取他们的公钥，这样才能把游戏玩下去。</p>
+<p>注：</p>
+<p>1 这些ＣＡ本身也有证书来证明自己的身份，并且ＣＡ的信用是像树一样分级的，高层的ＣＡ给低层的ＣＡ做信用背书，而操作系统／浏览器中会内置一些顶层的ＣＡ的证书，相当于你自动信任了他们。　这些顶层的ＣＡ证书一定得安全地放入操作系统／浏览器当中，否则世界大乱。</p>
+<p>2 <strong>数字证书的验证过程</strong></p>
+<p>以下图的证书链为场景来简化说明（当然真实的过程会复杂一些）</p>
+<p><img src="./imgs/证书链表.png" alt=""></p>
+<p>2.0 <strong>Zhang的数字证书</strong>由<strong>杭州市认证机构</strong>签发，杭州市认证机构的数字证书又由上级签发，依此类推，一直到国家这一层。国家认证机构的数字证书可以认为是根证书。Alice的电脑操作系统/浏览器一开始就安全内置前3个证书。</p>
+<p>2.1 当Alice收到Zhang的数字证书，需要验证这个证书，因为证书中的颁发机构是<strong>杭州市认证机构</strong>，所以在证书链中往上层找到<strong>杭州市认证机构的数字证书</strong>，借助其公钥对<strong>Zhang的数字证书</strong>进行验证。</p>
+<p>2.2 <strong>杭州市认证机构的数字证书</strong>通过其上层验证。</p>
+<p>2.3 依此类推...。</p>
+<p>2.4 直到根证书结束（因为根证书是自动信任的，所以不需要验证）。</p>
+<p>2.5 如果中间某个环节认证不通过，证书验证失败。如果都成功，证书验证成功。</p>
+<p>3 为什么可以自动信任顶层的证书？</p>
+<p>因为这些顶层的证书是在操作系统/浏览器中预置的，只要电脑安装的操作系统/浏览器安全，预置的证书也是安全的。</p>
+<h2 id="7-https">7 https</h2>
+<p>终于可以介绍https了，前面已经介绍了https的原理， 你把Zhang替换成浏览器， 把 Alice 替换成某个网站就行了。</p>
+<p>一个简化的https流程图是这样的， 如果你理解了前面的原理，这张图就变得非常简单：</p>
+<p><img src="./imgs/https通信流程.png" alt=""></p>
+
+</body>
+</html>
