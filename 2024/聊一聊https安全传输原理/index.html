@@ -414,7 +414,7 @@ code {
 <p>1 这些ＣＡ本身也有证书来证明自己的身份，并且ＣＡ的信用是像树一样分级的，高层的ＣＡ给低层的ＣＡ做信用背书，而操作系统／浏览器中会内置一些顶层的ＣＡ的证书，相当于你自动信任了他们。　这些顶层的ＣＡ证书一定得安全地放入操作系统／浏览器当中，否则世界大乱。</p>
 <p>2 <strong>数字证书的验证过程</strong></p>
 <p>以下图的证书链为场景来简化说明（当然真实的过程会复杂一些）</p>
-<p><img src="./imgs/证书链表.png" alt=""></p>
+<p><img src="https://raw.githubusercontent.com/creasy-pita/MDimage/master/img/20240330181703.png" alt=""></p>
 <p>2.0 <strong>Zhang的数字证书</strong>由<strong>杭州市认证机构</strong>签发，杭州市认证机构的数字证书又由上级签发，依此类推，一直到国家这一层。国家认证机构的数字证书可以认为是根证书。Alice的电脑操作系统/浏览器一开始就安全内置前3个证书。</p>
 <p>2.1 当Alice收到Zhang的数字证书，需要验证这个证书，因为证书中的颁发机构是<strong>杭州市认证机构</strong>，所以在证书链中往上层找到<strong>杭州市认证机构的数字证书</strong>，借助其公钥对<strong>Zhang的数字证书</strong>进行验证。</p>
 <p>2.2 <strong>杭州市认证机构的数字证书</strong>通过其上层验证。</p>
@@ -426,7 +426,7 @@ code {
 <h2 id="7-https">7 https</h2>
 <p>终于可以介绍https了，前面已经介绍了https的原理， 你把Zhang替换成浏览器， 把 Alice 替换成某个网站就行了。</p>
 <p>一个简化的https流程图是这样的， 如果你理解了前面的原理，这张图就变得非常简单：</p>
-<p><img src="https://github.com/creasy-pita/computer/blob/master/cryptography/imgs/https通信流程.png" alt=""></p>
+<p><img src="./imgs/https通信流程.png" alt=""></p>
 
 </body>
 </html>
